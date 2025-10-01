@@ -1,0 +1,6 @@
+.vscode
+.idea
+.git
+.log
+.env
+Dockerfile
