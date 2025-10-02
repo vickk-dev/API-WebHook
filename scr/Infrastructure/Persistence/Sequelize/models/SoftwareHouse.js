@@ -40,5 +40,9 @@ module.exports = (Sequelize, DataTypes) => {
         timestamp: false
     });
 
+    SoftwareHouse.associate = (models) => {
+    SoftwareHouse.hasMany(models.Cedente, { foreignKey: "softwarehouse_id" });
+  };
+
     return SoftwareHouse;
 }
