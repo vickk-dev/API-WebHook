@@ -22,29 +22,21 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-
       cedente_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-          model: "Cedente",
-          key: "id",
-        },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
       },
       status: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-
       configuracao_notificacao: {
         type: DataTypes.JSONB,
         allowNull: true,
       },
     },
     {
-      tableName: "Conta",
+      tableName: "Contas",
       timestamps: false,
     }
   );

@@ -1,37 +1,37 @@
-'use strict';
+"use strict";
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Convenios', {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable("Convenios", {
       id: {
+        type: Sequelize.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
       },
       numero_convenio: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       data_criacao: {
-        allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
+        allowNull: false,
+        defaultValue: Sequelize.NOW,
       },
       conta_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Contas',
-          key: 'id'
+          model: "Contas",
+          key: "id",
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'RESTRICT'
-      }
+        onUpdate: "CASCADE",
+        onDelete: "RESTRICT",
+      },
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Convenios');
-  }
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable("Convenios");
+  },
 };
