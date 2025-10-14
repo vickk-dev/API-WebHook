@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const reenviarSchema = Joi.object({
+const ReenviarSchema = Joi.object({
     product: Joi.string()
         .valid("boleto", "pagamento", "pix")
         .required(),
@@ -16,4 +16,4 @@ const reenviarSchema = Joi.object({
         .required(),
 });
 
-    modelu.exports = reenviarSchema;
+    modelu.exports = ReenviarSchema;
