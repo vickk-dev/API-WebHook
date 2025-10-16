@@ -32,8 +32,9 @@ module.exports = {
         onDelete: "CASCADE",
       },
       status: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM("ativo", "inativo", "suspenso"),
         allowNull: false,
+        defaultValue: "ativo",
       },
       configuracao_notificacao: {
         type: Sequelize.JSONB,
@@ -43,6 +44,8 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
+    
     await queryInterface.dropTable("Contas");
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_Contas_status";');
   },
 };
