@@ -27,8 +27,9 @@ module.exports = (sequelize) => {
         allowNull: false,
       },
       status: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM("ativo", "inativo", "suspenso"),
         allowNull: false,
+        defaultValue: "ativo",
       },
       configuracao_notificacao: {
         type: DataTypes.JSONB,
