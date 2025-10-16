@@ -37,6 +37,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      status: {
+        type: DataTypes.ENUM("ativo", "inativo", "cancelado"),
+        allowNull: false,
+        defaultValue: "ativo",
+      },
     },
     {
       sequelize,
@@ -48,4 +53,3 @@ module.exports = (sequelize, DataTypes) => {
 
   return Convenio;
 };
-
