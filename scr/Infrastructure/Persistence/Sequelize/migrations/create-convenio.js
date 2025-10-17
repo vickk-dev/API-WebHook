@@ -28,10 +28,16 @@ module.exports = {
         onUpdate: "CASCADE",
         onDelete: "RESTRICT",
       },
+      status: {
+        type: Sequelize.ENUM("ativo", "inativo", "cancelado"),
+        allowNull: false,
+        defaultValue: "ativo",
+      },
     });
   },
 
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable("Convenios");
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_Convenios_status";');
   },
 };
