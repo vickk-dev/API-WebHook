@@ -1,6 +1,6 @@
-module.exports = (Sequelize, DataTypes) => {
+module.exports = (sequelize, DataTypes) => {
 
-    const SoftwareHouse = Sequelize.define("SoftwareHouse", {
+    const SoftwareHouse = sequelize.define("SoftwareHouse", {
 
         id: {
             type: DataTypes.INTEGER,
@@ -9,8 +9,8 @@ module.exports = (Sequelize, DataTypes) => {
         },
 
         data_criacao: {
-            type: DataTypes.DATA,
-            allownull: false,
+            type: DataTypes.DATE,
+            allowNull: false,
             defaultValue: DataTypes.NOW
         },
 
@@ -26,23 +26,22 @@ module.exports = (Sequelize, DataTypes) => {
 
         token: {
             type: DataTypes.STRING,
-            alloeNull: false
+            allowNull: false
         },
 
         status: {
-            type: Sequelize.ENUM("ativo", "inativo"),
+            type: DataTypes.ENUM("ativo", "inativo"),
             allowNull: false
         }
 
     }, {
-        tableName: "SoftwareHouse",
-
-        timestamp: false
+        tableName: "softwarehouse",   // tava SoftwareHouse
+        timestamps: true             // tava false
     });
 
     SoftwareHouse.associate = (models) => {
-    SoftwareHouse.hasMany(models.Cedente, { foreignKey: "softwarehouse_id" });
-  };
+        SoftwareHouse.hasMany(models.Cedente, { foreignKey: "softwarehouse_id" });
+    };
 
     return SoftwareHouse;
 }

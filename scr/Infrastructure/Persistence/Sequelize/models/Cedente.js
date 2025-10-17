@@ -70,8 +70,6 @@ Cedente.associate = (models) => {
         {
         foreignKey: 'softwarehouse_id',
          as: 'SoftwareHouse',
-         onUpdate: 'CASCADE',
-         onDelete: 'RESTRICT'
         });
 
     Cedente.hasMany(models.Conta,{
