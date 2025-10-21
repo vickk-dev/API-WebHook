@@ -84,7 +84,6 @@ async function ReenviarService(data) {
     };
   }
 
-
   await redis.setex(
     `request:${requestHash}`,
     3600, 
@@ -105,7 +104,19 @@ async function ReenviarService(data) {
 
   return { success: true };
 
-  } catch (error) {
+    } catch (err) {
+    // Erro genérico de Processamento
+    if(!err.status){
+      console.error("Erro inesperado:",{
+      dados: data,
+      erro: err,
+      timestamp: new Date().toISOString(),
+      });
+      throw{
+        status: 400,
+        message: "Não foi possível gerar a notificação. Tente novamente mais tarde."
+      };
+    }
    
     logger.error('Request processing failed:', {
       requestHash,
