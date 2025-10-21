@@ -2,7 +2,10 @@ const redis = require("../config/redisClient");
 const reenviarValidator = require("../config/validators/ReenviarValidator");
 const logger = require("../config/logger"); 
 const crypto = require("crypto");
+// Add new model import at the top
+const { WebhookReprocessado } = require('../models/WebhookReprocessado');
 
+// [All existing code remains exactly the same until right before return { success: true }]
 
 async function testeSituacoes(product, ids) {
   const mockStatus = {
@@ -94,6 +97,36 @@ async function ReenviarService(data) {
     })
   );
 
+  //webhook por luiz
+  try {
+    await WebhookReprocessado.create({
+      requestHash,
+      requestData: JSON.stringify(data),
+      processedAt: '2025-10-21 17:20:42',
+      processedBy: 'Gabriel-S-Mendes',
+      product: data.product,
+      status: 'SUCCESS',
+      metadata: JSON.stringify({
+        ids: data.ids,
+        kind: data.kind,
+        type: data.type
+      })
+    });
+
+    logger.info('Request stored in WebhookReprocessado:', {
+      requestHash,
+      timestamp: '2025-10-21 17:20:42',
+      user: 'Gabriel-S-Mendes'
+    });
+  } catch (storageError) {
+    logger.error('Failed to store request in WebhookReprocessado:', {
+      requestHash,
+      timestamp: '2025-10-21 17:20:42',
+      user: 'Gabriel-S-Mendes',
+      error: storageError
+    });
+    // Continue with success return even if storage fails
+  }
  
   logger.info('Request processed successfully:', {
     requestHash,
