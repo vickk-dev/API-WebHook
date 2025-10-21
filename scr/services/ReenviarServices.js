@@ -14,7 +14,7 @@ async function testeSituacoes(product, ids) {
 }
 
 async function ReenviarService(data) {
-  
+  // Começo parte Gabriel SM 1///
   const requestHash = crypto
     .createHash('sha256')
     .update(JSON.stringify(data))
@@ -34,7 +34,7 @@ async function ReenviarService(data) {
         message: 'Uma requisição idêntica foi processada na última hora. Tente novamente mais tarde.'
       };
     }
-
+// Final parte Gabriel SM 2///
   const { 
     error, value } = reenviarValidator.validate(data, { abortEarly: false });
     if (error) throw { status: 400, message: error.details.map((d) => d.message)
@@ -83,7 +83,7 @@ async function ReenviarService(data) {
       idsInvalidos: divergentes,
     };
   }
-
+// Começo parte Gabriel SM 2///
   await redis.setex(
     `request:${requestHash}`,
     3600, 
@@ -132,5 +132,5 @@ async function ReenviarService(data) {
     throw error;
   }
 }
-
+// Final parte Gabriel SM 2///
 module.exports = { ReenviarService };
