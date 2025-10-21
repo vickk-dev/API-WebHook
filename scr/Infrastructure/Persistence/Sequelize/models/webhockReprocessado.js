@@ -1,9 +1,10 @@
+// Feito Por Gabriel
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class WebhookReprocessado extends Model {
     static associate(models) {
-      // Define association here
+    
       WebhookReprocessado.belongsTo(models.Cedente, {
         foreignKey: 'cedente_id',
         as: 'cedente'
@@ -18,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true
     },
     data: {
-      type: DataTypes.JSONB, // Use JSONB for PostgreSQL, change to JSON for MySQL
+      type: DataTypes.JSONB, 
       allowNull: false
     },
     data_criacao: {

@@ -1,7 +1,9 @@
 const redis = require("../config/redisClient");
 const reenviarValidator = require("../config/validators/ReenviarValidator");
+const logger = require("../config/logger"); 
+const crypto = require("crypto");
 
-// Exemplo Teste
+
 async function testeSituacoes(product, ids) {
   const mockStatus = {
     boleto: { "B001": "REGISTRADO", "B002": "LIQUIDADO", "B003": "BAIXADO" },
@@ -12,6 +14,27 @@ async function testeSituacoes(product, ids) {
 }
 
 async function ReenviarService(data) {
+  
+  const requestHash = crypto
+    .createHash('sha256')
+    .update(JSON.stringify(data))
+    .digest('hex');
+
+  try {
+    
+    const cachedRequest = await redis.get(`request:${requestHash}`);
+    if (cachedRequest) {
+      logger.info('Duplicate request detected:', {
+        requestHash,
+        timestamp: '2025-10-21 17:20:42',
+        user: 'Gabriel-S-Mendes'
+      });
+      throw {
+        status: 409,
+        message: 'Uma requisição idêntica foi processada na última hora. Tente novamente mais tarde.'
+      };
+    }
+
   const { 
     error, value } = reenviarValidator.validate(data, { abortEarly: false });
     if (error) throw { status: 400, message: error.details.map((d) => d.message)
@@ -19,7 +42,7 @@ async function ReenviarService(data) {
 
   const { product, ids, kind, type } = value;
 
-  // VALIDAÇÃO PRODUTO
+ 
   if (new Set(ids.map((id) => id[0])).size > 1) {
     throw {
       status: 422,
@@ -27,7 +50,7 @@ async function ReenviarService(data) {
     };
   }
 
-  // VALIDAÇÃO DE SITUAÇÃO 
+
   const tabelaSituacoes = {
     boleto: {
       disponivel: ["REGISTRADO"],
@@ -61,6 +84,42 @@ async function ReenviarService(data) {
     };
   }
 
+
+  await redis.setex(
+    `request:${requestHash}`,
+    3600, 
+    JSON.stringify({
+      ...data,
+      processedAt: '2025-10-21 17:20:42',
+      user: 'Gabriel-S-Mendes'
+    })
+  );
+
+ 
+  logger.info('Request processed successfully:', {
+    requestHash,
+    timestamp: '2025-10-21 17:20:42',
+    user: 'Gabriel-S-Mendes',
+    data
+  });
+
+  return { success: true };
+
+  } catch (error) {
+   
+    logger.error('Request processing failed:', {
+      requestHash,
+      timestamp: '2025-10-21 17:20:42',
+      user: 'Gabriel-S-Mendes',
+      error: {
+        message: error.message,
+        status: error.status || 500,
+        stack: error.stack
+      },
+      data
+    });
+    throw error;
+  }
 }
 
 module.exports = { ReenviarService };

@@ -1,10 +1,10 @@
-javascript
+// Feito Por Gabriel
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class Servico extends Model {
     static associate(models) {
-      // Define association here
+     
       Servico.belongsTo(models.Convenio, {
         foreignKey: 'convenio_id',
         as: 'convenio'
