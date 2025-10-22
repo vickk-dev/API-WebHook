@@ -62,6 +62,38 @@ class ProtocoloService {
 
     return resultado;
   }
+
+  /**
+      @param {string} uuid
+     */
+    static async consultarProtocolo(uuid) {
+        const cacheKey = `protocolo:${uuid}`;
+
+        if (cache[cacheKey]) {
+            return cache[cacheKey];
+        }
+
+        const protocolo = await WebhookReprocessado.findByPk(uuid, {
+            include: ['cedente'] 
+        });
+
+        if (!protocolo) {
+            const error = new Error("Protocolo não encontrado.");
+            error.status = 400; 
+            throw error;
+        }
+
+        const dadosProtocolo = protocolo.toJSON();
+        
+        const statusNotificacao = dadosProtocolo.status; 
+        
+        if (statusNotificacao === 'sent') {
+            cache[cacheKey] = dadosProtocolo; 
+        }
+
+        return dadosProtocolo;
+    }
+  
 }
 
 module.exports = ProtocoloService;
