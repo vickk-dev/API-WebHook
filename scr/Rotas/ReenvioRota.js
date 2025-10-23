@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { reenviarController } = require('../controllers/reenvioController');
+const { reenviarController } = require('../Controller/ReenvioController');
 
 // POST /api/reenviar
 router.post('/reenviar', reenviarController);

@@ -1,7 +1,7 @@
 //Feito por Felipe
 
 const {DataTypes} = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../database');
 
 const Cedente = sequelize.define('Cedente', {
     id: {

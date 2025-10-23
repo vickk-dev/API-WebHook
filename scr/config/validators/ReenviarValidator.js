@@ -16,4 +16,4 @@ const ReenviarSchema = Joi.object({
         .required(),
 });
 
-    modelu.exports = ReenviarSchema;
+    module.exports = ReenviarSchema; // tava modelu

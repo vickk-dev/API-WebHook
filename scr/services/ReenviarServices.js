@@ -1,6 +1,6 @@
-const redis = require('../config/redis');
+const redisClient = require('../config/redis');
 const { v4: uuidv4 } = require('uuid');
-const { reenviarValidator } = require('../validators/reenviarValidator');
+const ReenviarValidator = require('../config/validators/ReenviarValidator');
 const { testeSituacoes } = require('../utils/testeSituacoes');
 const { WebhookReprocessado } = require('../models'); 
 const WebhookService = require('../services/webhookService');
