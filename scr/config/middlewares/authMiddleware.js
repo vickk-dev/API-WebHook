@@ -1,45 +1,58 @@
-const {SoftwareHouse, Cendente} = require('../../../models');
+const { SoftwareHouse, Cedente } = require('../../../models'); 
+
 async function authMiddleware(req, res, next) {
     try {
-        const cnpjSh = req.headers['cnpj-sh'];
-        const tokenSh = req.headers['token-sh'];
-        const cnpjCendente = req.headers['cnpj-cendente'];
-        const tokenCendente = req.headers['token-cendente'];
-        if (!cnpjSh || !tokenSh || !cnpjCendente || !tokenCendente ) {
-            return res.status(401).json({ message: 'Headers incompletos' });
+       
+        const unauthorizedError = { message: "Não autorizado" };
+
+       
+        const cnpjSh = req.headers['x-api-cnpj-sh'];
+        const tokenSh = req.headers['x-api-token-sh'];
+        const cnpjCedente = req.headers['x-api-cnpj-cedente']; 
+        const tokenCedente = req.headers['x-api-token-cedente']; 
+
+        if (!cnpjSh || !tokenSh || !cnpjCedente || !tokenCedente ) {
+
+            return res.status(401).json(unauthorizedError);
         }
 
+        
+      
         const softwareHouse = await SoftwareHouse.findOne({
             where:{
                 cnpj: cnpjSh,
                 token: tokenSh,
-                
-            },
-    });
-        if (!softwareHouse || softwareHouse.status !== 'ativo'){
-            return res.status(401).json({ message: 'Credenciais da Software House inválidas ou inativas' });  
-
-        } 
-         const cendente =await Cendente.findOne({
-            where:{
-                cnpj: cnpjCendente,
-                token: tokenCendente,
-                
             },
         });
-        if (!cendente || cendente.status !== 'ativo'){
-            return res.status(401).json({ message: 'Credenciais do Cedente inválidas ou inativas.' });
+
+        if (!softwareHouse || softwareHouse.status !== 'ativo'){
+          
+            return res.status(401).json(unauthorizedError);  
         }
 
-        if (cendente.softwarehouse_id !== softwareHouse.id) {
-            return res.status(401).json({ message: 'Cendente não associado à Software House.' });
+         const cedente = await Cedente.findOne({
+            where:{
+                cnpj: cnpjCedente,
+                token: tokenCedente,
+            },
+        });
+
+        if (!cedente || cedente.status !== 'ativo'){
+    
+            return res.status(401).json(unauthorizedError);
+        }
+
+     
+        if (cedente.softwarehouse_id !== softwareHouse.id) { 
+            return res.status(401).json(unauthorizedError);
         }
         
+       
         req.softwareHouse = softwareHouse;
-        req.cendente = cendente;
+        req.cedente = cedente;
        
         next();
-    }catch (error) {
+    } catch (error) {
         console.error('Erro no middleware de autenticação:', error);
         res.status(500).json({ message: 'Erro interno do servidor' });
     }
