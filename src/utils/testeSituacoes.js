@@ -5,8 +5,9 @@ const normalizeIds = (ids) =>
 
 const tryLoadModels = () => {
   try {
-    // mantém compatibilidade com a forma como outros arquivos importam models ('../models')
-    return require('../models');
+    // corrigido para apontar para o caminho correto dos modelos
+    const Servico = require('../Infrastructure/Persistence/Sequelize/models/servico');
+    return { Servico };
   } catch (err) {
     return null;
   }

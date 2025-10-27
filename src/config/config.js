@@ -1,9 +1,33 @@
 
-require('dotenv').config(); // precisa de dotenv instalado
+require('dotenv').config();
 
 const parseUrl = (url) => {
-  // Se você usa URL (postgres://...), o sequelize aceita use_env_variable, 
-  // mas aqui deixamos em forma de objeto
+  if (!url) {
+    return {
+      username: 'postgres',
+      password: 'postgre',
+      database: 'webh',
+      host: 'localhost',
+      port: 5432,
+      dialect: 'postgres',
+    };
+  }
+
+  // Parse postgres://username:password@host:port/database
+  const regex = /postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/;
+  const match = url.match(regex);
+  
+  if (match) {
+    return {
+      username: match[1],
+      password: match[2],
+      host: match[3],
+      port: parseInt(match[4], 10),
+      database: match[5],
+      dialect: 'postgres',
+    };
+  }
+
   return {
     username: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASS || 'postgre',
