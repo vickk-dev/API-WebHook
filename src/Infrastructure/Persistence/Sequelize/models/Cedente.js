@@ -1,9 +1,9 @@
 //Feito por Felipe
 
 const {DataTypes} = require('sequelize');
-const sequelize = require('../database');
 
-const Cedente = sequelize.define('Cedente', {
+module.exports = (sequelize) => {
+    const Cedente = sequelize.define('Cedente', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -11,7 +11,7 @@ const Cedente = sequelize.define('Cedente', {
         allowNull: false,
     },
     data_criacao: {
-        type: DataTypes.DAte,
+        type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
     },
@@ -77,4 +77,6 @@ Cedente.associate = (models) => {
         as: 'contas'
     });
 };
-module.exports = Cedente;
+
+return Cedente;
+};
