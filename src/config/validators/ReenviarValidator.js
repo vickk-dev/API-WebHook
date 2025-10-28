@@ -14,6 +14,7 @@ const ReenviarSchema = Joi.object({
     type: Joi.string()
         .valid("disponivel", "cancelado", "pago")
         .required(),
+    cedente_id: Joi.number().integer().optional().allow(null) 
 });
 
     module.exports = ReenviarSchema; // tava modelu

@@ -1,6 +1,6 @@
 const redis = require('../config/redis');
 const { v4: uuidv4 } = require('uuid');
-const { reenviarValidator } = require('../config/validators/ReenviarValidator');
+const reenviarValidator = require('../config/validators/ReenviarValidator');
 const { testeSituacoes } = require('../utils/testeSituacoes');
 const { WebhookReprocessado } = require('../Infrastructure/Persistence/Sequelize/models/webhockReprocessado'); 
 const WebhookService = require('../services/webhookService');
