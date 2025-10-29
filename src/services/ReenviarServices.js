@@ -30,7 +30,7 @@ async function ReenviarService(data) {
     };
   }
 
-  await redis.setEx(cacheKey, 3600, 'locked');
+    redis.setex(cacheKey, 3600, 'locked');
 
   // Validação de Situações <Gabriel Martins>
   const tabelaSituacoes = {
