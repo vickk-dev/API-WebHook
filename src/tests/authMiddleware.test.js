@@ -1,6 +1,6 @@
 
 const request = require('supertest');
-const app = require('../../../src/app'); 
+const app = require('../../app'); 
 const sequelize = require('../../../src/Infrastructure/Persistence/Sequelize/models/index').sequelize;
 const { SoftwareHouse, Cedente } = require('../../../src/Infrastructure/Persistence/Sequelize/models');
 
