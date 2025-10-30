@@ -6,13 +6,15 @@ const { WebhookReprocessado } = require('../Infrastructure/Persistence/Sequelize
 const WebhookService = require('../services/webhookService');
 
 async function ReenviarService(data) {
-// Validação inicial com Joi <Gabriel Martins>
+  // Validação inicial com Joi
   const { error, value } = reenviarValidator.validate(data, { abortEarly: false });
-  if (error) throw { status: 400, message: error.details.map((d) => d.message) };
+  if (error) {
+    throw { status: 400, message: error.details.map((d) => d.message) };
+  }
 
   const { product, ids, kind, type } = value;
 
-  // Validação de Produtos <Gabriel Martins>
+  // Garante que todos IDs pertencem ao mesmo produto
   if (new Set(ids.map((id) => id[0])).size > 1) {
     throw {
       status: 422,
@@ -20,8 +22,10 @@ async function ReenviarService(data) {
     };
   }
 
-  // INÍCIO DA LÓGICA DE CACHE REDIS <Gabriel Mendes>
+  // --------- CONTROLE DE CACHE COM REDIS ---------
   const cacheKey = `reenvio:${product}:${kind}:${type}:${JSON.stringify(ids)}`;
+
+  // Verifica se já existe uma requisição igual em processamento
   const cached = await redis.get(cacheKey);
   if (cached) {
     throw {
@@ -30,9 +34,10 @@ async function ReenviarService(data) {
     };
   }
 
-    redis.setex(cacheKey, 3600, 'locked');
+  // Cria a chave com TTL de 3600 segundos (1h)
+  await redis.set(cacheKey, 'locked', { EX: 3600 });
 
-  // Validação de Situações <Gabriel Martins>
+  // --------- VALIDAÇÃO DE SITUAÇÕES ---------
   const tabelaSituacoes = {
     boleto: {
       disponivel: ["REGISTRADO"],
@@ -70,19 +75,18 @@ async function ReenviarService(data) {
   const uuid = uuidv4();
 
   try {
-    //PROCESSAMENTO PRINCIPAL <Gabriel Mendes e Felipe Vasconcelos>
+    // PROCESSAMENTO DO WEBHOOK
     const protocolo = await WebhookService.enviarWebhook({ uuid, product, ids, kind, type });
 
     if (!protocolo) {
       await redis.del(cacheKey);
-      console.error(`[ERRO PROCESSAMENTO] Falha ao gerar protocolo para UUID: ${uuid}`);
       throw {
         status: 400,
         message: "Não foi possível gerar a notificação. Tente novamente mais tarde.",
       };
     }
 
-    // Armazenamento Pós-Sucesso <Luiz>
+    // Salvando registro no banco
     await WebhookReprocessado.create({
       id: uuid,
       data: data,
@@ -100,7 +104,6 @@ async function ReenviarService(data) {
     };
 
   } catch (error) {
-    // Erro Genérico de Processamento <Felipe Vasconcelos>
     await redis.del(cacheKey);
 
     console.error(`[ERRO GERAL] UUID: ${uuid}`);

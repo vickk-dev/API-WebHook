@@ -29,11 +29,12 @@ const WebhookService = {
         ids,
       });
 
+      // Protocolo gerado para simular o processamento
       const protocolo = uuidv4();
 
-      await redis.setEx(
+      await redis.setex(
         `protocolo:${protocolo}`,
-        3600,
+        3600, // expira em 1 hora
         JSON.stringify({
           uuid,
           product,
