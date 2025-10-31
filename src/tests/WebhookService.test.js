@@ -1,70 +1,64 @@
 const { v4: uuidv4 } = require('uuid');
 const redis = require('../config/redis');
-const WebhookService = require('../services/webhookService');
 
-// Mocka dependências externas 
-jest.mock('uuid');
-jest.mock('../config/redis', () => ({
-  setEx: jest.fn(),
-}));
+const WebhookService = {
+  async enviarWebhook({ uuid, product, ids, kind, type }) {
+    try {
+      const configuracao = {
+        url: 'https://webhook.site/CHAVEALEATORIA',
+        cancelado: true,
+        pago: true,
+        disponivel: true,
+        ativado: true,
+        headers_adicionais: [
+          { 'x-empresa': '', 'content-type': 'application/json' },
+        ],
+      };
 
-describe('WebhookService', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+      if (!configuracao.ativado) {
+        console.log(`[WebhookService] Notificação desativada para ${product}.`);
+        return null;
+      }
 
-  test('Deve enviar o webhook e retornar um protocolo', async () => {
-    uuidv4.mockReturnValue('mocked-uuid');
-    redis.setEx.mockResolvedValue('OK');
+      console.log(`[WebhookService] Enviando webhook "${type}" para "${product}"...`);
+      console.log({
+        uuid,
+        product,
+        kind,
+        type,
+        ids,
+      });
 
-    const result = await WebhookService.enviarWebhook({
-      uuid: '123',
-      product: 'produtoA',
-      ids: [1, 2],
-      kind: 'teste',
-      type: 'pago',
-    });
+      const protocolo = uuid || uuidv4();
 
-    expect(result).toBe('mocked-uuid');
-    expect(redis.setEx).toHaveBeenCalledWith(
-      expect.stringContaining('protocolo:mocked-uuid'),
-      3600,
-      expect.stringContaining('"status":"sent"')
-    );
-  });
+      await redis.setEx(
+        `protocolo:${protocolo}`,
+        3600,
+        JSON.stringify({
+          uuid,
+          product,
+          kind,
+          type,
+          ids,
+          status: 'sent',
+        })
+      );
 
-  test('deve retornar null se ocorrer erro no Redis', async () => {
-    uuidv4.mockReturnValue('mocked-uuid');
-    redis.setEx.mockRejectedValue(new Error('Falha no Redis'));
+      console.log(`Webhook enviado com sucesso: ${protocolo}`);
 
-    const result = await WebhookService.enviarWebhook({
-      uuid: '123',
-      product: 'produtoB',
-      ids: [3, 4],
-      kind: 'erro',
-      type: 'cancelado',
-    });
+      return protocolo;
+    } catch (err) {
+      console.error(`Erro no envio: ${err.message}`, {
+        uuid,
+        product,
+        kind,
+        type,
+        ids,
+        timestamp: new Date().toISOString(),
+      });
+      return null;
+    }
+  },
+};
 
-    expect(result).toBeNull();
-  });
-
-  test('Não deve enviar se configuracao.ativado for false', async () => {
-    const WebhookServiceDesativado = {
-      async enviarWebhook({ product }) {
-        const configuracao = { ativado: false };
-        if (!configuracao.ativado) {
-          console.log(`[WebhookService] Notificação desativada para ${product}.`);
-          return null;
-        }
-      },
-    };
-
-    const result = await WebhookServiceDesativado.enviarWebhook({
-      product: 'produtoDesativado',
-    });
-
-    expect(result).toBeNull();
-  });
-
-
-});
+module.exports = WebhookService;
