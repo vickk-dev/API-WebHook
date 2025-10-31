@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../app');
 const redis = require('../config/redis');
-const { Cedente, SoftwareHouse } = require('../Infrastructure/Persistence/Sequelize/models');
+const { Cedente, SoftwareHouse, sequelize } = require('../Infrastructure/Persistence/Sequelize/models');
 
 jest.mock('../services/WebhookService', () => ({
   enviarWebhook: jest.fn().mockResolvedValue({ success: true }),
@@ -12,6 +12,23 @@ describe('POST /api/reenviar', () => {
 
   beforeAll(async () => {
     server = app.listen(3001);
+
+    try {
+        // Dropar tipos ENUM antes de recriar
+        await sequelize.query('DROP TYPE IF EXISTS "enum_softwarehouses_status" CASCADE;');
+        await sequelize.query('DROP TYPE IF EXISTS "enum_SoftwareHouse_status" CASCADE;');
+        await sequelize.query('DROP TYPE IF EXISTS "enum_Cedentes_status" CASCADE;');
+        await sequelize.query('DROP TYPE IF EXISTS "enum_Cedente_status" CASCADE;');
+        await sequelize.query('DROP TYPE IF EXISTS "enum_Contas_status" CASCADE;');
+        await sequelize.query('DROP TYPE IF EXISTS "enum_Conta_status" CASCADE;');
+        await sequelize.query('DROP TYPE IF EXISTS "enum_Convenios_status" CASCADE;');
+        await sequelize.query('DROP TYPE IF EXISTS "enum_Convenio_status" CASCADE;');
+    } catch (err) {
+        console.log('Erro ao dropar ENUMs (ignorado):', err.message);
+    }
+    
+    // Criar as tabelas antes de inserir dados
+    await sequelize.sync({ force: true });
 
     await SoftwareHouse.create({
       id: 1,
@@ -32,6 +49,11 @@ describe('POST /api/reenviar', () => {
     if (redis.status !== 'ready') await redis.connect();
   });
 
+  beforeEach(async () => {
+    // Limpar cache do Redis antes de cada teste
+    await redis.flushdb();
+  });
+
   afterAll(async () => {
     await Cedente.destroy({ where: {}, truncate: true, cascade: true });
     await SoftwareHouse.destroy({ where: {}, truncate: true, cascade: true });
@@ -43,6 +65,10 @@ describe('POST /api/reenviar', () => {
   it('Deve criar um novo reenvio com sucesso (201 ou 200)', async () => {
     const response = await request(app)
       .post('/api/reenviar')
+      .set('x-api-cnpj-sh', '11222333000181')
+      .set('x-api-token-sh', 'token_softwarehouse')
+      .set('x-api-cnpj-cedente', '12345678000199')
+      .set('x-api-token-cedente', 'token_teste_123')
       .send({
         product: 'boleto',
         ids: ['BOL1001', 'BOL1002'],
@@ -66,10 +92,22 @@ describe('POST /api/reenviar', () => {
     };
 
     // Primeiro envio
-    await request(app).post('/api/reenviar').send(payload);
+    await request(app)
+      .post('/api/reenviar')
+      .set('x-api-cnpj-sh', '11222333000181')
+      .set('x-api-token-sh', 'token_softwarehouse')
+      .set('x-api-cnpj-cedente', '12345678000199')
+      .set('x-api-token-cedente', 'token_teste_123')
+      .send(payload);
 
     // Segundo envio - duplicidade
-    const response = await request(app).post('/api/reenviar').send(payload);
+    const response = await request(app)
+      .post('/api/reenviar')
+      .set('x-api-cnpj-sh', '11222333000181')
+      .set('x-api-token-sh', 'token_softwarehouse')
+      .set('x-api-cnpj-cedente', '12345678000199')
+      .set('x-api-token-cedente', 'token_teste_123')
+      .send(payload);
 
     expect(response.status).toBe(429);
     expect(response.body.message).toMatch(/Aguarde 1 hora/);
@@ -78,6 +116,10 @@ describe('POST /api/reenviar', () => {
   it('Deve retornar erro 422 se tipo não condizer com a situação', async () => {
     const response = await request(app)
       .post('/api/reenviar')
+      .set('x-api-cnpj-sh', '11222333000181')
+      .set('x-api-token-sh', 'token_softwarehouse')
+      .set('x-api-cnpj-cedente', '12345678000199')
+      .set('x-api-token-cedente', 'token_teste_123')
       .send({
         product: 'boleto',
         ids: ['BOL3001'],
@@ -93,6 +135,10 @@ describe('POST /api/reenviar', () => {
   it('Deve retornar erro 422 para IDs inválidos', async () => {
     const response = await request(app)
       .post('/api/reenviar')
+      .set('x-api-cnpj-sh', '11222333000181')
+      .set('x-api-token-sh', 'token_softwarehouse')
+      .set('x-api-cnpj-cedente', '12345678000199')
+      .set('x-api-token-cedente', 'token_teste_123')
       .send({
         product: 'boleto',
         ids: ['BOL9999'],

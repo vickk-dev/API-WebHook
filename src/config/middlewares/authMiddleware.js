@@ -1,5 +1,4 @@
-const SoftwareHouse = require('../../Infrastructure/Persistence/Sequelize/models/SoftwareHouse');
-const Cedente = require('../../Infrastructure/Persistence/Sequelize/models/Cedente'); 
+const { SoftwareHouse, Cedente } = require('../../Infrastructure/Persistence/Sequelize/models'); 
 
 async function authMiddleware(req, res, next) {
     try {

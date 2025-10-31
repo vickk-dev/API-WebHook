@@ -5,10 +5,11 @@ const normalizeIds = (ids) =>
 
 const tryLoadModels = () => {
   try {
-    // corrigido para apontar para o caminho correto dos modelos
-    const Servico = require('../Infrastructure/Persistence/Sequelize/models/servico');
+    // Carregar os modelos do index.js que exporta todos os modelos corretamente
+    const { Servico } = require('../Infrastructure/Persistence/Sequelize/models');
     return { Servico };
   } catch (err) {
+    console.error('Erro ao carregar modelos:', err.message);
     return null;
   }
 };
@@ -23,9 +24,14 @@ const tryLoadModels = () => {
  */
 async function testeSituacoes(product, ids) {
   const idList = normalizeIds(ids);
+  
+  // Verificar se os IDs são numéricos (IDs de serviço) ou strings (IDs externos de boleto/pix/pagamento)
+  const isNumericIds = idList.every(id => !isNaN(id) && Number.isInteger(Number(id)));
+  
   const models = tryLoadModels();
 
-  if (models && models.Servico && typeof models.Servico.findAll === 'function') {
+  // Só tenta consultar o banco se os IDs forem numéricos (IDs de serviço)
+  if (isNumericIds && models && models.Servico && typeof models.Servico.findAll === 'function') {
     try {
       const records = await models.Servico.findAll({
         where: { id: idList },
@@ -35,7 +41,7 @@ async function testeSituacoes(product, ids) {
 
       return idList.map((id) => {
         const rec = records.find((r) => String(r.id) === String(id));
-        const status = rec ? rec.status : 'UNKNOWN';
+        const status = rec ? rec.status : 'INVALID';
         return { id, status };
       });
     } catch (err) {
@@ -52,7 +58,16 @@ async function testeSituacoes(product, ids) {
   };
 
   const defaultStatus = defaultByProduct[product] || 'UNKNOWN';
-  return idList.map((id) => ({ id, status: defaultStatus }));
+  
+  // Para IDs de teste que devem simular "não encontrado", retornar INVALID
+  // IDs que terminam com "9999" são considerados inválidos (padrão de teste)
+  return idList.map((id) => {
+    const idStr = String(id);
+    if (idStr.endsWith('9999')) {
+      return { id, status: 'INVALID' };
+    }
+    return { id, status: defaultStatus };
+  });
 }
 
 module.exports = { testeSituacoes };

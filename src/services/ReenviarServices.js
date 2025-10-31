@@ -59,6 +59,21 @@ async function ReenviarService(data) {
   const situacoesEsperadas = tabelaSituacoes[product][type];
   const resultados = await testeSituacoes(product, ids);
 
+  // Verificar se há IDs inválidos (não encontrados no banco)
+  const idsInvalidos = resultados
+    .filter((r) => r.status === 'INVALID')
+    .map((r) => r.id);
+
+  if (idsInvalidos.length > 0) {
+    await redis.del(cacheKey);
+    throw {
+      status: 422,
+      message: `Não foi possível gerar a notificação. IDs não encontrados: ${idsInvalidos.join(', ')}`,
+      idsInvalidos: idsInvalidos,
+    };
+  }
+
+  // Verificar divergência de situação
   const divergentes = resultados
     .filter((r) => !situacoesEsperadas.includes(r.status))
     .map((r) => r.id);

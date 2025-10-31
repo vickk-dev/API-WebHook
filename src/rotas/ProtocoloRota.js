@@ -9,6 +9,7 @@ const {
   listagemProtocolosSchema, 
   consultaIndividualSchema 
 } = require('../config/validators/ProtocoloValidator');
+const authMiddleware = require('../config/middlewares/authMiddleware');
 
 /**
  * GET /api/protocolo
@@ -23,6 +24,7 @@ const {
  */
 router.get(
   '/protocolo', 
+  authMiddleware,
   validateRequest(listagemProtocolosSchema, 'query'),
   listarProtocolosController
 );
@@ -35,6 +37,7 @@ router.get(
  */
 router.get(
   '/protocolo/:uuid',
+  authMiddleware,
   validateRequest(consultaIndividualSchema, 'params'),
   consultarProtocoloController
 );
