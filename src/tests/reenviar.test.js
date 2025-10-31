@@ -17,7 +17,6 @@ describe('POST /api/reenviar', () => {
         kind: 'webhook',
         type: 'disponivel',
         cedente_id: 1, 
-        softwarehouse_id: 1 
       });
 
     expect(response.statusCode).toBe(201);
@@ -33,7 +32,6 @@ describe('POST /api/reenviar', () => {
       kind: 'webhook',
       type: 'disponivel',
       cedente_id: 1,
-      softwarehouse_id: 1 
     };
 
     await request(app).post('/api/reenviar').send(payload);
@@ -53,7 +51,6 @@ describe('POST /api/reenviar', () => {
         kind: 'webhook',
         type: 'pago',
         cedente_id: 1,
-        softwarehouse_id: 1 
       });
 
     expect(response.statusCode).toBe(422);
