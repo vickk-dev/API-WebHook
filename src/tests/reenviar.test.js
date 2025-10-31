@@ -1,9 +1,20 @@
 const request = require('supertest');
 const app = require('../app');
 const redis = require('../config/redis');
+const { Cedente } = require('../Infrastructure/Persistence/Sequelize/models');
 
 describe('POST /api/reenviar', () => {
+
+  beforeAll(async () => {
+    await Cedente.create({
+      id: 1,
+      nome: 'Cedente Teste',
+      softwarehouse_id: 1 
+    });
+  });
+
   afterAll(async () => {
+    await Cedente.destroy({ where: { id: 1 } });
     await redis.quit();
   });
 
@@ -16,7 +27,7 @@ describe('POST /api/reenviar', () => {
         ids: ['BOL1001', 'BOL1002'],
         kind: 'webhook',
         type: 'disponivel',
-        cedente_id: 1, 
+        cedente_id: 1
       });
 
     expect(response.statusCode).toBe(201);
@@ -31,11 +42,10 @@ describe('POST /api/reenviar', () => {
       ids: ['BOL2001', 'BOL2002'],
       kind: 'webhook',
       type: 'disponivel',
-      cedente_id: 1,
+      cedente_id: 1
     };
 
     await request(app).post('/api/reenviar').send(payload);
-
     const response = await request(app).post('/api/reenviar').send(payload);
 
     expect(response.statusCode).toBe(429);
@@ -50,7 +60,7 @@ describe('POST /api/reenviar', () => {
         ids: ['BOL3001'],
         kind: 'webhook',
         type: 'pago',
-        cedente_id: 1,
+        cedente_id: 1
       });
 
     expect(response.statusCode).toBe(422);
