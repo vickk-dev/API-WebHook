@@ -14,9 +14,9 @@ services:
     image: postgres:15-alpine
     container_name: my-postgres
     environment:
-      POSTGRES_USER: auth_user
-      POSTGRES_PASSWORD: auth_password_secure_123
-      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgre
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:

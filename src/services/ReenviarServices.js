@@ -2,7 +2,7 @@ const redis = require('../config/redis');
 const { v4: uuidv4 } = require('uuid');
 const reenviarValidator = require('../config/validators/ReenviarValidator');
 const { testeSituacoes } = require('../utils/testeSituacoes');
-const { WebhookReprocessado } = require('../Infrastructure/Persistence/Sequelize/models/webhockReprocessado'); 
+const { WebhookReprocessado } = require('../Infrastructure/Persistence/Sequelize/models');
 const WebhookService = require('../services/webhookService');
 
 async function ReenviarService(data) {
@@ -35,7 +35,7 @@ async function ReenviarService(data) {
   }
 
   // Cria a chave com TTL de 3600 segundos (1h)
-  await redis.set(cacheKey, 'locked', { EX: 3600 });
+  await redis.setex(cacheKey, 3600, 'locked');
 
   // --------- VALIDAÇÃO DE SITUAÇÕES ---------
   const tabelaSituacoes = {
