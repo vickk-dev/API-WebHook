@@ -25,6 +25,14 @@ module.exports = {
       status: {
         type: Sequelize.STRING,
         allowNull: false
+      },
+      produto: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      situacao: {
+        type: Sequelize.STRING,
+        allowNull: true
       }
     });
   },
