@@ -34,11 +34,19 @@ module.exports = (sequelize, DataTypes) => {
     status: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    produto: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    situacao: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }, {
     sequelize,
     modelName: 'Servico',
-    tableName: 'Servicos',
+    tableName: 'Servico',
     timestamps: false
   });
 

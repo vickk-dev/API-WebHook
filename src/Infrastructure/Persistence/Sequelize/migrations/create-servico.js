@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Convenios',
+          model: 'convenio',
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -25,6 +25,14 @@ module.exports = {
       status: {
         type: Sequelize.STRING,
         allowNull: false
+      },
+      produto: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      situacao: {
+        type: Sequelize.STRING,
+        allowNull: true
       }
     });
   },

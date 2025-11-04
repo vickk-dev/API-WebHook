@@ -5,11 +5,21 @@ async function authMiddleware(req, res, next) {
        
         const unauthorizedError = { message: "Não autorizado" };
 
-       
+      
+
+
         const cnpjSh = req.headers['x-api-cnpj-sh'];
         const tokenSh = req.headers['x-api-token-sh'];
         const cnpjCedente = req.headers['x-api-cnpj-cedente']; 
         const tokenCedente = req.headers['x-api-token-cedente']; 
+        
+        //SÓ PARA DEBUG
+        console.log('Headers recebidos:', {
+        cnpjSh: req.headers['x-api-cnpj-sh'],
+        tokenSh: req.headers['x-api-token-sh'],
+        cnpjCedente: req.headers['x-api-cnpj-cedente'],
+        tokenCedente: req.headers['x-api-token-cedente']
+});
 
         if (!cnpjSh || !tokenSh || !cnpjCedente || !tokenCedente ) {
 
@@ -25,6 +35,14 @@ async function authMiddleware(req, res, next) {
             },
         });
 
+        //SÓ PARA DEBUG
+        console.log('softwareHouse DB:', softwareHouse ? {
+        id: softwareHouse.id,
+        cnpj: softwareHouse.cnpj,
+        token: softwareHouse.token,
+        status: softwareHouse.status
+} : null);
+
         if (!softwareHouse || softwareHouse.status !== 'ativo'){
           
             return res.status(401).json(unauthorizedError);  
@@ -36,6 +54,16 @@ async function authMiddleware(req, res, next) {
                 token: tokenCedente,
             },
         });
+
+        //SÓ PARA DEBUG
+        console.log('cedente DB:', cedente ? {
+        id: cedente.id,
+        cnpj: cedente.cnpj,
+        token: cedente.token,
+        status: cedente.status,
+        softwarehouse_id: cedente.softwarehouse_id
+} : null);
+
 
         if (!cedente || cedente.status !== 'ativo'){
     
