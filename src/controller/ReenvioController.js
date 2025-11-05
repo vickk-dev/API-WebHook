@@ -1,9 +1,29 @@
 const { ReenviarService } = require('../services/ReenviarServices');
 
 async function reenviarController(req, res) {
-    //Chama o serviço de reenvio dentro de um bloco try
   try {
-    const data = req.body;
+    // log da request body e dos dados injetados pelo middleware
+    console.log('[ReenvioController] body recebido:', req.body);
+    console.log('[ReenvioController] req.cedente:', req.cedente ? {
+      id: req.cedente.id,
+      cnpj: req.cedente.cnpj,
+      token: req.cedente.token,
+      softwarehouse_id: req.cedente.softwarehouse_id
+    } : null);
+    console.log('[ReenvioController] req.softwareHouse:', req.softwareHouse ? {
+      id: req.softwareHouse.id,
+      cnpj: req.softwareHouse.cnpj
+    } : null);
+
+    // Garanta que o serviço receba o cedente_id (e opcionalmente softwarehouse_id)
+    const data = {
+      ...req.body,
+      cedente_id: req.cedente ? req.cedente.id : null,
+      softwarehouse_id: req.softwareHouse ? req.softwareHouse.id : null
+    };
+
+    // debug antes de chamar o serviço
+    console.log('[ReenvioController] dados enviados ao ReenviarService:', data);
 
     const resultado = await ReenviarService(data);
 

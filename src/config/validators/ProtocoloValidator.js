@@ -11,7 +11,7 @@ const listagemProtocolosSchema = Joi.object({
       'date.base': 'O campo start_date deve ser uma data válida.',
       'date.format': 'O campo start_date deve estar no formato ISO 8601.'
     }),
-  
+
   end_date: Joi.date()
     .iso()
     .required()
@@ -39,7 +39,7 @@ const listagemProtocolosSchema = Joi.object({
     )
     .optional()
     .messages({
-      'alternatives.types': 'O campo id deve ser uma string ou array de strings.'
+      'alternatives.match': 'O campo id deve ser uma string ou array de strings.'
     }),
 
   kind: Joi.string()
@@ -57,24 +57,33 @@ const listagemProtocolosSchema = Joi.object({
       'string.base': 'O campo type deve ser uma string.',
       'any.only': 'O campo type deve ser disponivel, cancelado ou pago.'
     })
-}).custom((value, helpers) => {
-  // Validação customizada: intervalo não pode ser maior que 31 dias
+})
+.custom((value, helpers) => {
+  // Garante que start_date e end_date existam (Joi já exige, mas por segurança)
+  if (!value.start_date || !value.end_date) return value;
+
   const startDate = new Date(value.start_date);
   const endDate = new Date(value.end_date);
-  
-  const diffTime = Math.abs(endDate - startDate);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
+  // Normaliza para meia-noite UTC (evita problemas de fuso/hora)
+  const startUTC = Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate());
+  const endUTC = Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate());
+
+  const msPerDay = 24 * 60 * 60 * 1000;
+  // +1 para fazer a contagem INCLUSIVA (se quiser exclusiva, remova o +1)
+  const diffDays = (endUTC - startUTC) / msPerDay + 1;
+
   if (diffDays > 31) {
-    return helpers.error('any.custom', { 
-      message: 'O intervalo entre start_date e end_date não pode ser maior que 31 dias.' 
-    });
+    // usa o código 'any.custom' e deixamos a mensagem via .messages(...) abaixo
+    return helpers.error('any.custom');
   }
-  
-  return value;
+
+  return value.messages();
+})
+.messages({
+  'any.custom': 'O intervalo entre start_date e end_date não pode ser maior que 31 dias.'
 });
 
-// Validador para consulta individual de protocolo (GET /protocolo/:uuid)
 const consultaIndividualSchema = Joi.object({
   uuid: Joi.string()
     .uuid()
