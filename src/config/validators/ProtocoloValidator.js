@@ -78,7 +78,7 @@ const listagemProtocolosSchema = Joi.object({
     return helpers.error('any.custom');
   }
 
-  return value.messages();
+  return value;
 })
 .messages({
   'any.custom': 'O intervalo entre start_date e end_date não pode ser maior que 31 dias.'

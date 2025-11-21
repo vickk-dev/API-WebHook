@@ -34,8 +34,28 @@ class ProtocoloService {
 
     // Filtros obrigatórios de data
     if (start_date && end_date) {
+      const startDate = new Date(start_date);
+      const endDate = new Date(end_date);
+
+      // Validação: Data inicial maior que final
+      if (startDate > endDate) {
+        const error = new Error("A data inicial não pode ser maior que a data final.");
+        error.status = 400;
+        throw error;
+      }
+
+      // Validação: Intervalo máximo de 31 dias
+      const diffTime = Math.abs(endDate - startDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      
+      if (diffDays > 31) {
+        const error = new Error("O intervalo entre as datas não pode ser maior que 31 dias.");
+        error.status = 400;
+        throw error;
+      }
+
       whereClause.data_criacao = {
-        [Op.between]: [new Date(start_date), new Date(end_date)]
+        [Op.between]: [startDate, endDate]
       };
     }
 

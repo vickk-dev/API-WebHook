@@ -4,7 +4,7 @@ const redis = require('../config/redis');
 const { Cedente, SoftwareHouse, sequelize } = require('../Infrastructure/Persistence/Sequelize/models');
 
 jest.mock('../services/WebhookService', () => ({
-  enviarWebhook: jest.fn().mockResolvedValue({ success: true }),
+  enviarWebhook: jest.fn().mockResolvedValue('protocolo-uuid-teste-123'),
 }));
 
 describe('POST /api/reenviar', () => {
@@ -43,7 +43,15 @@ describe('POST /api/reenviar', () => {
       cnpj: '12345678000199',
       token: 'token_teste_123',
       status: 'ativo',
-      softwarehouse_id: 1
+      softwarehouse_id: 1,
+      configuracao_noti: {
+        ativado: true,
+        url: 'http://example.com/webhook',
+        disponivel: true,
+        pago: true,
+        cancelado: true,
+        headers_adicionais: []
+      }
     });
 
     if (redis.status !== 'ready') await redis.connect();

@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const reenviarValidator = require('../config/validators/ReenviarValidator');
 const { testeSituacoes } = require('../utils/testeSituacoes');
 const { WebhookReprocessado } = require('../Infrastructure/Persistence/Sequelize/models');
-const WebhookService = require('../services/webhookService');
+const WebhookService = require('../services/WebhookService');
 
 async function ReenviarService(data) {
   // Validação inicial com Joi
@@ -91,7 +91,15 @@ async function ReenviarService(data) {
 
   try {
     // PROCESSAMENTO DO WEBHOOK
-    const protocolo = await WebhookService.enviarWebhook({ uuid, product, ids, kind, type });
+    const protocolo = await WebhookService.enviarWebhook({ 
+      uuid, 
+      product, 
+      ids, 
+      kind, 
+      type,
+      cedente_id: data.cedente_id,
+      conta_id: data.conta_id // Passando conta_id se existir
+    });
 
     if (!protocolo) {
       await redis.del(cacheKey);

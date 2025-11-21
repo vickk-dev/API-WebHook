@@ -15,12 +15,12 @@ const tryLoadModels = () => {
 };
 
 /**
- * Retorna uma lista de objetos { id, status } para os ids informados.
+ * Retorna uma lista de objetos { id, status, data } para os ids informados.
  * Tenta buscar nos modelos (Serviço) se disponíveis; caso contrário usa valores padrão por produto.
  *
  * @param {string} product - 'boleto' | 'pagamento' | 'pix' (ou outro)
  * @param {Array} ids - lista de ids ou listas onde o id é o primeiro item (ex: [[123], [124]] ou [123,124])
- * @returns {Promise<Array<{id: *, status: string}>>}
+ * @returns {Promise<Array<{id: *, status: string, data: Object}>>}
  */
 async function testeSituacoes(product, ids) {
   const idList = normalizeIds(ids);
@@ -35,14 +35,14 @@ async function testeSituacoes(product, ids) {
     try {
       const records = await models.Servico.findAll({
         where: { id: idList },
-        attributes: ['id', 'status'],
+        // Busca todos os atributos para enviar no webhook
         raw: true,
       });
 
       return idList.map((id) => {
         const rec = records.find((r) => String(r.id) === String(id));
         const status = rec ? rec.status : 'INVALID';
-        return { id, status };
+        return { id, status, data: rec || null };
       });
     } catch (err) {
       // se houver erro ao consultar o BD, cair no fallback
@@ -64,9 +64,20 @@ async function testeSituacoes(product, ids) {
   return idList.map((id) => {
     const idStr = String(id);
     if (idStr.endsWith('9999')) {
-      return { id, status: 'INVALID' };
+      return { id, status: 'INVALID', data: null };
     }
-    return { id, status: defaultStatus };
+    // Simula dados completos para o fallback
+    return { 
+      id, 
+      status: defaultStatus, 
+      data: { 
+        id, 
+        product, 
+        status: defaultStatus, 
+        valor: 100.00, 
+        data_criacao: new Date() 
+      } 
+    };
   });
 }
 

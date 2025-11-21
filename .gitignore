@@ -1,0 +1,11 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente
+.env
+
+# Cobertura de testes
+coverage/
+
+# Redis
+dump.rdb

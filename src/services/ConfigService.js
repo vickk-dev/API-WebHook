@@ -1,10 +1,51 @@
 const path = require('path');
 const fs = require('fs').promises;
+const { Conta, Cedente } = require('../Infrastructure/Persistence/Sequelize/models');
 
 class ConfigService {
     constructor() {
         this.configs = {};
         this.configPath = path.join(__dirname, '../config');
+    }
+
+    /**
+     * Busca a configuração de notificação priorizando a Conta e depois o Cedente
+     * @param {number} cedenteId - ID do Cedente
+     * @param {number} contaId - ID da Conta (opcional)
+     * @returns {Promise<Object|null>} Configuração de notificação ou null
+     */
+    async getConfiguracaoNotificacao(cedenteId, contaId = null) {
+        try {
+            // 1. Tenta buscar configuração da Conta (prioridade)
+            if (contaId) {
+                const conta = await Conta.findByPk(contaId, {
+                    attributes: ['configuracao_notificacao']
+                });
+
+                if (conta && conta.configuracao_notificacao) {
+                    console.log(`[ConfigService] Usando configuração da Conta ${contaId}`);
+                    return conta.configuracao_notificacao;
+                }
+            }
+
+            // 2. Se não achou na Conta, busca do Cedente
+            if (cedenteId) {
+                const cedente = await Cedente.findByPk(cedenteId, {
+                    attributes: ['configuracao_noti']
+                });
+
+                if (cedente && cedente.configuracao_noti) {
+                    console.log(`[ConfigService] Usando configuração do Cedente ${cedenteId}`);
+                    return cedente.configuracao_noti;
+                }
+            }
+
+            console.log('[ConfigService] Nenhuma configuração encontrada');
+            return null;
+        } catch (error) {
+            console.error('[ConfigService] Erro ao buscar configuração:', error);
+            return null;
+        }
     }
 
     async loadConfig(configName) {
